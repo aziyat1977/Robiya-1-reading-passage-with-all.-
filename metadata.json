@@ -1,0 +1,5 @@
+{
+  "name": "CD IELTS Simulator 2025",
+  "description": "A high-fidelity Computer-Delivered IELTS Reading exam simulator featuring split-screen UI, real-time timing, and interactive question palettes, populated with breaking science news content from late 2025.",
+  "requestFramePermissions": []
+}
