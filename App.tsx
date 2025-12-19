@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PASSAGES, EXAM_DURATION_SECONDS } from './constants';
@@ -9,19 +8,24 @@ import QuestionViewer from './components/QuestionViewer';
 import LanguagePracticeViewer from './components/LanguagePracticeViewer';
 import ResultsModal from './components/ResultsModal';
 import ReviewModal from './components/ReviewModal';
-import { Lock, PlayCircle, BookOpen, GraduationCap } from 'lucide-react';
+import SidebarMenu from './components/SidebarMenu';
+import { Lock, PlayCircle, BookOpen, GraduationCap, Layout } from 'lucide-react';
 
+type AppMode = 'landing' | 'exam' | 'practice';
 type ViewState = 'exam' | 'review' | 'result';
-type LeftPanelMode = 'passage' | 'practice';
 
 const App: React.FC = () => {
+  // Navigation & Mode State
+  const [appMode, setAppMode] = useState<AppMode>('landing');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Exam/Passage State
   const [currentPassageIndex, setCurrentPassageIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [flagged, setFlagged] = useState<Set<number>>(new Set());
   const [timeLeft, setTimeLeft] = useState(EXAM_DURATION_SECONDS);
   const [viewState, setViewState] = useState<ViewState>('exam');
   const [isPaused, setIsPaused] = useState(false);
-  const [leftPanelMode, setLeftPanelMode] = useState<LeftPanelMode>('passage');
   
   // Resizer state
   const [leftWidthPct, setLeftWidthPct] = useState(50);
@@ -31,9 +35,9 @@ const App: React.FC = () => {
   // Question scrolling state
   const [targetQuestionId, setTargetQuestionId] = useState<number | null>(null);
 
-  // Timer logic
+  // Timer logic - only runs in 'exam' mode
   useEffect(() => {
-    if (viewState === 'result' || isPaused) return;
+    if (appMode !== 'exam' || viewState === 'result' || isPaused) return;
     
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -47,7 +51,7 @@ const App: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [viewState, isPaused]);
+  }, [appMode, viewState, isPaused]);
 
   // Resizing Logic
   const startResizing = useCallback(() => setIsResizing(true), []);
@@ -88,7 +92,6 @@ const App: React.FC = () => {
     setCurrentPassageIndex(passageIdx);
     setTargetQuestionId(questionId);
     setViewState('exam');
-    setLeftPanelMode('passage'); // Reset to passage view on navigation
   };
 
   const handleNavigateFromReview = (questionId: number) => {
@@ -111,102 +114,112 @@ const App: React.FC = () => {
     setViewState('exam');
     setIsPaused(false);
     setTargetQuestionId(null);
-    setLeftPanelMode('passage');
+  };
+
+  const handleModeSelect = (mode: AppMode, passageIndex?: number) => {
+    setAppMode(mode);
+    setIsMenuOpen(false);
+    
+    // Reset specific states based on mode
+    if (mode === 'landing') {
+      setIsPaused(false);
+    } else if (mode === 'exam') {
+      handleRestart(); // Reset exam
+    } else if (mode === 'practice') {
+      if (passageIndex !== undefined) {
+        setCurrentPassageIndex(passageIndex);
+      }
+      setIsPaused(false);
+    }
   };
 
   const currentPassage = PASSAGES[currentPassageIndex];
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-gray-100 selection:bg-blue-200 selection:text-blue-900 font-sans">
+      <SidebarMenu 
+        isOpen={isMenuOpen} 
+        onClose={() => setIsMenuOpen(false)} 
+        onSelectMode={handleModeSelect} 
+      />
+
       <ExamHeader 
         timeRemaining={timeLeft} 
         isPaused={isPaused}
+        appMode={appMode}
         onPauseToggle={() => setIsPaused(!isPaused)}
         onRestart={handleRestart}
         onStop={handleSubmit}
+        onMenuClick={() => setIsMenuOpen(true)}
       />
 
-      {/* Main Split Screen Area */}
+      {/* Main Content Area */}
       <main 
         ref={containerRef}
-        className={`flex-1 flex overflow-hidden relative ${isResizing ? 'cursor-col-resize select-none' : ''}`}
+        className={`flex-1 flex overflow-hidden relative ${isResizing && appMode !== 'landing' ? 'cursor-col-resize select-none' : ''}`}
       >
-        {/* Left Pane: Passage OR Practice */}
-        <div style={{ width: `${leftWidthPct}%` }} className="h-full relative z-0 flex flex-col bg-slate-50 border-r border-gray-300">
-          
-          {/* Mode Toggle Header */}
-          {currentPassage.practiceModule && (
-             <div className="h-12 flex-shrink-0 border-b border-gray-200 bg-white flex">
-                <button 
-                  onClick={() => setLeftPanelMode('passage')}
-                  className={`flex-1 flex items-center justify-center gap-2 text-sm font-bold transition-colors ${leftPanelMode === 'passage' ? 'text-blue-600 bg-blue-50 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}
-                >
-                  <BookOpen className="w-4 h-4" /> Reading Text
-                </button>
-                <button 
-                  onClick={() => setLeftPanelMode('practice')}
-                  className={`flex-1 flex items-center justify-center gap-2 text-sm font-bold transition-colors ${leftPanelMode === 'practice' ? 'text-indigo-600 bg-indigo-50 border-b-2 border-indigo-600' : 'text-gray-500 hover:bg-gray-50'}`}
-                >
-                  <GraduationCap className="w-4 h-4" /> Language Practice
-                </button>
-             </div>
-          )}
-
-          <div className="flex-1 overflow-hidden relative">
-            <AnimatePresence mode="wait">
-              {leftPanelMode === 'passage' ? (
-                <motion.div 
-                  key="passage"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                  className="h-full"
-                >
+        {appMode === 'landing' ? (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex-1 flex flex-col items-center justify-center bg-slate-50 text-gray-400"
+          >
+             <motion.div 
+               initial={{ scale: 0.9, opacity: 0 }}
+               animate={{ scale: 1, opacity: 1 }}
+               transition={{ delay: 0.2 }}
+               className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-6"
+             >
+                <Layout className="w-10 h-10 text-gray-400" />
+             </motion.div>
+             <h1 className="text-2xl font-bold text-gray-600 mb-2">Welcome to CD IELTS Simulator</h1>
+             <p className="text-gray-400">Open the menu in the top-left to begin.</p>
+          </motion.div>
+        ) : (
+          <>
+            {/* Left Pane */}
+            <div style={{ width: `${leftWidthPct}%` }} className="h-full relative z-0 flex flex-col bg-slate-50 border-r border-gray-300">
+              <div className="flex-1 overflow-hidden relative">
+                {appMode === 'exam' && (
                   <PassageViewer passage={currentPassage} />
-                </motion.div>
-              ) : (
-                currentPassage.practiceModule && (
-                  <motion.div 
-                    key="practice"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ duration: 0.2 }}
-                    className="h-full"
-                  >
-                    <LanguagePracticeViewer module={currentPassage.practiceModule} />
-                  </motion.div>
-                )
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
+                )}
+                {appMode === 'practice' && currentPassage.practiceModule && (
+                  <LanguagePracticeViewer module={currentPassage.practiceModule} />
+                )}
+              </div>
+            </div>
 
-        {/* Resizer Handle */}
-        <div 
-          onMouseDown={startResizing}
-          className="w-2 bg-gray-200 hover:bg-blue-400 active:bg-blue-600 h-full cursor-col-resize z-20 flex items-center justify-center transition-colors shadow-[0_0_10px_rgba(0,0,0,0.1)] absolute"
-          style={{ left: `${leftWidthPct}%`, transform: 'translateX(-50%)' }}
-        >
-           <div className="h-12 w-1.5 bg-gray-400 rounded-full pointer-events-none" />
-        </div>
+            {/* Resizer Handle */}
+            <div 
+              onMouseDown={startResizing}
+              className="w-2 bg-gray-200 hover:bg-blue-400 active:bg-blue-600 h-full cursor-col-resize z-20 flex items-center justify-center transition-colors shadow-[0_0_10px_rgba(0,0,0,0.1)] absolute"
+              style={{ left: `${leftWidthPct}%`, transform: 'translateX(-50%)' }}
+            >
+               <div className="h-12 w-1.5 bg-gray-400 rounded-full pointer-events-none" />
+            </div>
 
-        {/* Right Pane: Questions */}
-        <div style={{ width: `${100 - leftWidthPct}%` }} className="h-full bg-white relative z-0">
-          <QuestionViewer 
-            questions={currentPassage.questions}
-            answers={answers}
-            flagged={flagged}
-            targetQuestionId={targetQuestionId}
-            onAnswer={handleAnswer}
-            onFlag={handleFlag}
-          />
-        </div>
+            {/* Right Pane */}
+            <div style={{ width: `${100 - leftWidthPct}%` }} className="h-full bg-white relative z-0">
+               {appMode === 'exam' ? (
+                 <QuestionViewer 
+                   questions={currentPassage.questions}
+                   answers={answers}
+                   flagged={flagged}
+                   targetQuestionId={targetQuestionId}
+                   onAnswer={handleAnswer}
+                   onFlag={handleFlag}
+                 />
+               ) : (
+                 // In Practice Mode, show Passage for context on right
+                 <PassageViewer passage={currentPassage} />
+               )}
+            </div>
+          </>
+        )}
 
-        {/* Pause Overlay */}
+        {/* Pause Overlay (Only for Exam Mode) */}
         <AnimatePresence>
-          {isPaused && (
+          {isPaused && appMode === 'exam' && (
             <motion.div 
               initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
               animate={{ opacity: 1, backdropFilter: 'blur(8px)' }}
@@ -238,15 +251,18 @@ const App: React.FC = () => {
         </AnimatePresence>
       </main>
 
-      <FooterNav 
-        currentPassageIndex={currentPassageIndex}
-        answers={answers}
-        flagged={flagged}
-        onNavigate={handleNavigate}
-        onReview={() => setViewState('review')} 
-      />
+      {/* Footer only in Exam Mode */}
+      {appMode === 'exam' && (
+        <FooterNav 
+          currentPassageIndex={currentPassageIndex}
+          answers={answers}
+          flagged={flagged}
+          onNavigate={handleNavigate}
+          onReview={() => setViewState('review')} 
+        />
+      )}
 
-      {viewState === 'review' && (
+      {viewState === 'review' && appMode === 'exam' && (
         <ReviewModal 
           answers={answers}
           flagged={flagged}
@@ -255,7 +271,7 @@ const App: React.FC = () => {
         />
       )}
 
-      {viewState === 'result' && (
+      {viewState === 'result' && appMode === 'exam' && (
         <ResultsModal 
           answers={answers} 
           onClose={handleRestart} 
