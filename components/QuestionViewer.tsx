@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Question } from '../types';
@@ -32,40 +33,48 @@ const QuestionViewer: React.FC<QuestionViewerProps> = ({
   }, [targetQuestionId, questions]);
 
   return (
-    <div className="h-full bg-white overflow-y-auto p-8 scroll-smooth">
+    <div className="h-full bg-white overflow-y-auto p-8 md:p-12 scroll-smooth">
       <AnimatePresence mode="popLayout">
-        <div className="space-y-12 max-w-3xl mx-auto pb-20">
+        <motion.div 
+           initial="hidden"
+           animate="visible"
+           variants={{
+             visible: { transition: { staggerChildren: 0.1 } }
+           }}
+           className="space-y-12 max-w-3xl mx-auto pb-20"
+        >
           {questions.map((q, idx) => (
             <motion.div 
               key={q.id}
               ref={(el) => (questionRefs.current[q.id] = el)}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.1, type: "spring", stiffness: 100, damping: 20 }}
-              className={`group rounded-xl p-6 transition-colors duration-300 ${targetQuestionId === q.id ? 'bg-blue-50/50 ring-2 ring-blue-100' : 'hover:bg-gray-50'}`}
+              variants={{
+                hidden: { opacity: 0, x: 50 },
+                visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 100, damping: 20 } }
+              }}
+              className={`group rounded-2xl p-8 transition-all duration-500 ${targetQuestionId === q.id ? 'bg-blue-50/50 ring-2 ring-blue-100 shadow-lg' : 'hover:bg-gray-50'}`}
             >
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
+              <div className="flex justify-between items-start mb-6">
+                <div className="flex items-center gap-4">
                   <motion.span 
                     layout
-                    className={`font-bold w-10 h-10 flex items-center justify-center rounded-lg text-lg shadow-sm transition-colors
-                      ${answers[q.id] ? 'bg-blue-600 text-white' : 'bg-gray-800 text-white'}
+                    className={`font-black w-12 h-12 flex items-center justify-center rounded-xl text-xl shadow-lg transition-all
+                      ${answers[q.id] ? 'bg-blue-600 text-white shadow-blue-500/30' : 'bg-gray-800 text-white shadow-gray-500/30'}
                     `}
                   >
                     {q.id}
                   </motion.span>
-                  <span className="text-xs uppercase font-bold text-gray-500 tracking-wider">
-                    Select one option
+                  <span className="text-xs uppercase font-black text-gray-400 tracking-[0.1em]">
+                    Select One Option
                   </span>
                 </div>
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => onFlag(q.id)}
-                  className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-colors border
+                  className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-colors border-2
                     ${flagged.has(q.id) 
                       ? 'text-red-700 bg-red-50 border-red-200' 
-                      : 'text-gray-400 bg-white border-gray-200 hover:text-gray-600 hover:border-gray-300'
+                      : 'text-gray-400 bg-white border-gray-100 hover:border-gray-300 hover:text-gray-600'
                     }`}
                 >
                   <Flag className={`w-3.5 h-3.5 ${flagged.has(q.id) ? 'fill-current' : ''}`} />
@@ -73,22 +82,22 @@ const QuestionViewer: React.FC<QuestionViewerProps> = ({
                 </motion.button>
               </div>
 
-              <p className="text-gray-900 font-medium text-lg md:text-xl mb-6 leading-snug">
+              <p className="text-gray-900 font-bold text-xl md:text-2xl mb-8 leading-snug">
                 {q.text}
               </p>
 
-              <div className="space-y-3 pl-2">
+              <div className="space-y-4 pl-2">
                 {q.options.map((opt) => {
                   const isSelected = answers[q.id] === opt.label;
                   return (
                     <motion.label 
                       key={opt.label} 
-                      whileHover={{ scale: 1.005 }}
+                      whileHover={{ scale: 1.01, x: 5 }}
                       whileTap={{ scale: 0.99 }}
                       className={`
-                        flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-colors duration-200 relative overflow-hidden
+                        flex items-center gap-5 p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 relative overflow-hidden group/label
                         ${isSelected 
-                          ? 'border-blue-500 shadow-md' 
+                          ? 'border-blue-500 shadow-lg shadow-blue-500/10' 
                           : 'bg-white border-gray-100 hover:border-blue-200'
                         }
                       `}
@@ -106,18 +115,17 @@ const QuestionViewer: React.FC<QuestionViewerProps> = ({
                           initial={false}
                           animate={{
                             backgroundColor: isSelected ? "#2563EB" : "#FFFFFF",
-                            borderColor: isSelected ? "#2563EB" : "#D1D5DB",
+                            borderColor: isSelected ? "#2563EB" : "#E5E7EB",
                             scale: isSelected ? 1.1 : 1
                           }}
-                          transition={{ duration: 0.2 }}
-                          className="w-6 h-6 rounded-full border-2 flex items-center justify-center"
+                          className="w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors"
                         >
                           {isSelected && (
                             <motion.div 
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
                               transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                              className="w-2.5 h-2.5 bg-white rounded-full shadow-sm" 
+                              className="w-3 h-3 bg-white rounded-full shadow-sm" 
                             />
                           )}
                         </motion.div>
@@ -125,11 +133,10 @@ const QuestionViewer: React.FC<QuestionViewerProps> = ({
                       
                       <motion.div 
                         className="flex-1 z-10"
-                        animate={{ x: isSelected ? 6 : 0 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        animate={{ x: isSelected ? 4 : 0 }}
                       >
-                        <span className={`font-bold mr-3 transition-colors ${isSelected ? 'text-blue-700' : 'text-gray-400'}`}>{opt.label}</span>
-                        <span className={`transition-colors ${isSelected ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>{opt.text}</span>
+                        <span className={`font-black mr-3 text-lg transition-colors ${isSelected ? 'text-blue-700' : 'text-gray-300 group-hover/label:text-blue-400'}`}>{opt.label}</span>
+                        <span className={`text-lg transition-colors ${isSelected ? 'text-gray-900 font-bold' : 'text-gray-600 font-medium'}`}>{opt.text}</span>
                       </motion.div>
                       
                       {isSelected && (
@@ -147,7 +154,7 @@ const QuestionViewer: React.FC<QuestionViewerProps> = ({
               </div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </AnimatePresence>
     </div>
   );

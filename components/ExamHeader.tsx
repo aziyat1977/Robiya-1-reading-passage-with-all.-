@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Clock, HelpCircle, EyeOff, Volume2, VolumeX, PauseCircle, PlayCircle, RotateCcw, Power, Menu } from 'lucide-react';
+import { Clock, EyeOff, Volume2, VolumeX, PauseCircle, PlayCircle, RotateCcw, Power, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ExamHeaderProps {
@@ -30,130 +31,137 @@ const ExamHeader: React.FC<ExamHeaderProps> = ({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const isLowTime = timeRemaining < 300; // Red alert under 5 mins
+  const isLowTime = timeRemaining < 300; 
 
   return (
-    <header className="h-16 bg-white border-b border-gray-300 flex items-center justify-between px-4 shadow-sm flex-shrink-0 z-20 relative select-none">
+    <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-6 shadow-sm flex-shrink-0 z-30 relative select-none">
       
       {/* Left: Menu & Identity */}
       <div className="flex items-center gap-6">
         <motion.button 
-          whileHover={{ scale: 1.1 }}
+          whileHover={{ scale: 1.1, rotate: 90 }}
           whileTap={{ scale: 0.9 }}
           onClick={onMenuClick}
-          className="p-2 -ml-2 hover:bg-gray-100 rounded-lg text-gray-700 transition-colors"
+          className="p-3 bg-gray-100 rounded-xl text-gray-700 hover:bg-gray-200 transition-colors"
         >
           <Menu className="w-6 h-6" />
         </motion.button>
 
-        <div className="h-8 w-px bg-gray-300 hidden md:block"></div>
+        <div className="h-10 w-px bg-gray-200 hidden md:block"></div>
 
         <div className="hidden md:flex flex-col">
-          <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Candidate Name</span>
-          <span className="text-sm font-bold text-gray-800">John Doe</span>
+          <span className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Candidate</span>
+          <span className="text-base font-bold text-gray-900">John Doe</span>
         </div>
         <div className="hidden md:flex flex-col">
-          <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Candidate Number</span>
-          <span className="text-sm font-bold text-gray-800">12345678</span>
+          <span className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Number</span>
+          <span className="text-base font-bold text-gray-900">12345678</span>
         </div>
       </div>
 
-      {/* Center: Timer (Only in Exam Mode) */}
+      {/* Center: Timer */}
       <div className="flex items-center justify-center flex-1">
         <AnimatePresence mode="wait">
           {appMode === 'exam' && !isTimerHidden && (
             <motion.div 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className={`flex items-center gap-2 ${isLowTime && !isPaused ? 'text-red-600' : 'text-blue-900'}`}
+              initial={{ opacity: 0, scale: 0.5, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.5, y: -20 }}
+              transition={{ type: "spring", stiffness: 200 }}
+              className={`flex items-center gap-3 px-6 py-2 rounded-full ${isLowTime && !isPaused ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-blue-50 text-blue-900 border border-blue-100'}`}
             >
-              <Clock className={`w-5 h-5 ${isLowTime && !isPaused ? 'animate-pulse' : ''}`} />
+              <Clock className={`w-5 h-5 ${isLowTime && !isPaused ? 'animate-ping' : ''}`} />
               <motion.span 
                 key={timeRemaining}
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: 1 }}
-                className="text-2xl font-mono font-bold w-[90px] text-center"
+                initial={{ y: -5, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="text-3xl font-mono font-bold w-[100px] text-center"
               >
                 {formatTime(timeRemaining)}
               </motion.span>
-              <span className="text-xs font-semibold uppercase ml-1 hidden sm:inline">Time left</span>
+              <span className="text-xs font-black uppercase tracking-widest opacity-60 hidden sm:inline">Time Left</span>
             </motion.div>
           )}
           {appMode === 'practice' && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-indigo-600 font-bold flex items-center gap-2 bg-indigo-50 px-4 py-1.5 rounded-full"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-white font-bold flex items-center gap-3 bg-indigo-600 px-6 py-2 rounded-full shadow-lg shadow-indigo-200"
             >
-               <span className="text-sm uppercase tracking-wider">Practice Mode</span>
+               <span className="text-sm uppercase tracking-[0.2em]">Practice Mode</span>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
       {/* Right: Controls */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         {appMode === 'exam' && (
           <>
-            <button 
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={onPauseToggle}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-colors
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm
                 ${isPaused 
                   ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                  : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
+                  : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200'
                 }`}
-              title={isPaused ? "Resume Test" : "Pause Test"}
             >
               {isPaused ? <PlayCircle className="w-4 h-4" /> : <PauseCircle className="w-4 h-4" />}
               <span className="hidden lg:inline">{isPaused ? "Resume" : "Pause"}</span>
-            </button>
+            </motion.button>
 
-            <button 
+            <motion.button 
+              whileHover={{ scale: 1.05, backgroundColor: "#F3F4F6" }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => {
                 if(window.confirm("Are you sure you want to restart the test? All progress will be lost.")) {
                   onRestart();
                 }
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 active:bg-gray-200 text-gray-600 text-sm font-medium transition-colors"
-              title="Restart Test"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-200 text-gray-600 text-sm font-bold shadow-sm"
             >
               <RotateCcw className="w-4 h-4" />
               <span className="hidden lg:inline">Restart</span>
-            </button>
+            </motion.button>
 
-            <button 
+            <motion.button 
+              whileHover={{ scale: 1.05, backgroundColor: "#FEF2F2", color: "#DC2626" }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => {
                 if(window.confirm("Are you sure you want to stop and submit the test?")) {
                   onStop();
                 }
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-red-50 active:bg-red-100 text-red-600 text-sm font-medium transition-colors"
-              title="Stop & Submit"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-200 text-red-500 text-sm font-bold shadow-sm"
             >
               <Power className="w-4 h-4" />
               <span className="hidden lg:inline">Stop</span>
-            </button>
+            </motion.button>
 
-            <div className="w-px h-6 bg-gray-300 mx-1 hidden lg:block"></div>
+            <div className="w-px h-8 bg-gray-200 mx-1 hidden lg:block"></div>
 
-            <button 
+            <motion.button 
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => setIsTimerHidden(!isTimerHidden)}
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 active:bg-gray-200 text-gray-600 text-sm font-medium transition-colors"
+              className="hidden lg:flex p-3 rounded-xl hover:bg-gray-100 text-gray-500"
+              title={isTimerHidden ? "Show Timer" : "Hide Timer"}
             >
-              <EyeOff className="w-4 h-4" />
-              {isTimerHidden ? 'Show' : 'Hide'}
-            </button>
+              <EyeOff className="w-5 h-5" />
+            </motion.button>
           </>
         )}
         
-        <button 
+        <motion.button 
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => setSoundEnabled(!soundEnabled)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 active:bg-gray-200 text-gray-600 text-sm font-medium transition-colors"
-          title="Toggle Sound"
+          className="p-3 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors"
         >
-          {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-        </button>
+          {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+        </motion.button>
       </div>
     </header>
   );
