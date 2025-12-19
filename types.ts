@@ -36,10 +36,28 @@ export interface PracticeModule {
     pronunciation: string;
     visualData: { label: string; value: number }[]; // For timeline/charts
   };
+  teachingChunks: {
+    title: string;
+    content: string;
+    icon: 'idea' | 'structure' | 'sound' | 'alert';
+  }[];
   examples: string[];
   quizzes: { question: string; options: string[]; correct: number }[];
   tests: { question: string; options: string[]; correct: number }[];
   gapFills: { sentence: string; answer: string }[];
+  wordFormation: { 
+    root: string; 
+    derivatives: string[]; 
+    sentence: string; 
+    answer: string;
+  }[];
+  paraphrasing: {
+    original: string;
+    paraphrase: string;
+    technique: string;
+    options: string[];
+    correct: number;
+  }[];
   kahootLinks: { title: string; url: string }[];
   speakingQuestions: string[];
 }

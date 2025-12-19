@@ -10,18 +10,24 @@ const createPracticeModule = (
   form: string, 
   pronunciation: string,
   visuals: any[],
+  teachingChunks: any[],
   examples: string[],
   quizzes: any[],
   tests: any[],
   gapFills: any[],
+  wordFormation: any[],
+  paraphrasing: any[],
   speaking: string[]
 ): PracticeModule => ({
   grammarTopic: topic,
   mfp: { meaning, form, pronunciation, visualData: visuals },
+  teachingChunks,
   examples,
   quizzes,
   tests,
   gapFills,
+  wordFormation,
+  paraphrasing,
   kahootLinks: [
     { title: "Kahoot Challenge 1", url: "#" },
     { title: "Kahoot Challenge 2", url: "#" },
@@ -31,11 +37,16 @@ const createPracticeModule = (
 });
 
 const PASSAGE_1_PRACTICE = createPracticeModule(
-  "Comparative Structures & Modifiers",
+  "Comparative Structures",
   "Used to compare differences between the two objects they modify (larger, smaller, faster, higher). In this passage, we compare human species.",
   "Noun (subject) + verb + comparative adjective + than + noun (object).",
   "Stress usually falls on the adjective. Weak form of 'than' /ðən/.",
   [{ label: "H. sapiens", value: 82 }, { label: "Neanderthal", value: 88 }, { label: "H. juluensis", value: 106 }],
+  [
+    { title: "Concept", content: "We use comparatives to show how two things are different in quality or quantity.", icon: 'idea' },
+    { title: "Structure", content: "For short adjectives, add '-er'. For long ones, use 'more'. Don't forget 'than'!", icon: 'structure' },
+    { title: "Exception", content: "Irregular adjectives: Good -> Better, Bad -> Worse, Far -> Further.", icon: 'alert' }
+  ],
   [
     "It significantly exceeds that of contemporary Neanderthals.",
     "Unlike the more gracile Homo sapiens...",
@@ -57,6 +68,15 @@ const PASSAGE_1_PRACTICE = createPracticeModule(
     { sentence: "Evolution is _____ (complex) than we thought.", answer: "more complex" }
   ],
   [
+    { root: "EVOLUTION", derivatives: ["Evolutionary", "Evolve", "Evolving"], sentence: "The _____ path of this species is unique.", answer: "evolutionary" },
+    { root: "DISTINCT", derivatives: ["Distinction", "Distinctive", "Distinctly"], sentence: "It has _____ features not seen elsewhere.", answer: "distinctive" },
+    { root: "SIGNIFY", derivatives: ["Significance", "Significant", "Significantly"], sentence: "The size _____ exceeds modern averages.", answer: "significantly" }
+  ],
+  [
+    { original: "It significantly exceeds that of contemporary Neanderthals.", paraphrase: "It is _____ larger than that of Neanderthals of the same time.", technique: "Synonym Replacement", options: ["slightly", "considerably", "barely"], correct: 1 },
+    { original: "Defies easy categorization", paraphrase: "Is _____ to classify.", technique: "Structural Change", options: ["simple", "impossible", "difficult"], correct: 2 }
+  ],
+  [
     "Describe the physical differences between modern humans and the species described in the text.",
     "Do you think size is the most important factor in evolution? Why or why not?",
     "Compare the 'Out of Africa' theory with the findings in this passage."
@@ -64,11 +84,16 @@ const PASSAGE_1_PRACTICE = createPracticeModule(
 );
 
 const PASSAGE_2_PRACTICE = createPracticeModule(
-  "Present Participles (-ing clauses)",
+  "Present Participles",
   "Used to describe the result of an action or a simultaneous action. Common in scientific explanations.",
   "Verb + -ing. Often follows a comma.",
   "Smooth linking between the main verb and the participle. No pause required if defining.",
   [{ label: "Detection", value: 30 }, { label: "Analysis", value: 40 }, { label: "Prediction", value: 30 }],
+  [
+    { title: "Active Meaning", content: "-ing clauses often replace 'which' or 'who' + active verb.", icon: 'idea' },
+    { title: "Result", content: "When used after a comma, it often shows the result of the main action.", icon: 'structure' },
+    { title: "Simultaneity", content: "Two things happening at the same time: 'Walking down the street, he whistled.'", icon: 'alert' }
+  ],
   [
     "The system analyses the canopy, pinpointing specific levels of nitrogen.",
     "Shifting conservation from reactive rescue missions to proactive management.",
@@ -90,6 +115,15 @@ const PASSAGE_2_PRACTICE = createPracticeModule(
     { sentence: "They released the koalas, _____ (hope) for their survival.", answer: "hoping" }
   ],
   [
+    { root: "CONSERVE", derivatives: ["Conservation", "Conservative", "Conservatory"], sentence: "Koala _____ is a major priority.", answer: "conservation" },
+    { root: "SPECTRUM", derivatives: ["Spectral", "Specter", "Spectate"], sentence: "They analyze the _____ signatures of leaves.", answer: "spectral" },
+    { root: "REHABILITATE", derivatives: ["Rehabilitation", "Rehab", "Ability"], sentence: "Sites for _____ koalas were identified.", answer: "rehabilitated" }
+  ],
+  [
+    { original: "Hampered by the koala's cryptic nature", paraphrase: "_____ by the koala's ability to hide.", technique: "Synonym", options: ["Helped", "Hindered", "Found"], correct: 1 },
+    { original: "Pinpointing specific levels", paraphrase: "_____ exact amounts.", technique: "Synonym", options: ["Guessing", "Identifying", "Ignoring"], correct: 1 }
+  ],
+  [
     "Explain how the technology in the passage works using cause and effect language.",
     "Discuss the benefits of 'proactive' vs 'reactive' conservation.",
     "Describe a time you used technology to solve a difficult problem."
@@ -97,11 +131,16 @@ const PASSAGE_2_PRACTICE = createPracticeModule(
 );
 
 const PASSAGE_3_PRACTICE = createPracticeModule(
-  "Passive Voice in Academic Writing",
+  "Passive Voice",
   "Used to emphasize the action or the object rather than the agent. Essential for objective scientific reporting.",
   "Be + Past Participle (+ by agent).",
   "Stress on the main verb participle. 'Was/Were' are often weak.",
   [{ label: "Active", value: 20 }, { label: "Passive", value: 80 }, { label: "Stative", value: 0 }],
+  [
+    { title: "Object Focus", content: "Use passive when the action is more important than who did it.", icon: 'idea' },
+    { title: "Unknown Agent", content: "Use it when we don't know (or don't care) who did the action.", icon: 'structure' },
+    { title: "Academic Tone", content: "It makes writing sound more objective and formal.", icon: 'sound' }
+  ],
   [
     "The 'frustrated magnet' problem has been bedevilled...",
     "The resulting state is a chaotic web...",
@@ -121,6 +160,15 @@ const PASSAGE_3_PRACTICE = createPracticeModule(
     { sentence: "The experiment _____ (conduct) yesterday.", answer: "was conducted" },
     { sentence: "The results _____ (publish) in the next issue.", answer: "will be published" },
     { sentence: "It _____ (know) as the 'frustrated magnet' problem.", answer: "is known" }
+  ],
+  [
+    { root: "THEORY", derivatives: ["Theoretical", "Theorize", "Theorem"], sentence: "They used a _____ model.", answer: "theoretical" },
+    { root: "COMPUTE", derivatives: ["Computational", "Computer", "Computation"], sentence: "Standard _____ modeling failed.", answer: "computational" },
+    { root: "COLLABORATE", derivatives: ["Collaborator", "Collaboration", "Collaborative"], sentence: "AI acted as a _____.", answer: "collaborator" }
+  ],
+  [
+    { original: "Defies standard computational modeling", paraphrase: "Cannot be modeled by _____ computers.", technique: "Synonym", options: ["special", "normal", "future"], correct: 1 },
+    { original: "Cracked the code", paraphrase: "_____ the problem.", technique: "Idiom Replacement", options: ["Broke", "Solved", "Wrote"], correct: 1 }
   ],
   [
     "Summarize the breakthrough at Brookhaven using the passive voice where appropriate.",
