@@ -28,36 +28,44 @@ export interface ExamState {
   timeRemaining: number; // in seconds
 }
 
+export interface TimelineEvent {
+  year: string;
+  label: string;
+  description?: string;
+}
+
+export interface DragDropItem {
+  id: string;
+  content: string;
+  category?: string; // For sorting tasks
+}
+
+export interface DragDropTask {
+  instruction: string;
+  items: DragDropItem[];
+  targets: { id: string; label: string; expectedIds: string[] }[]; // Buckets
+}
+
+export interface SentenceBuilderTask {
+  instruction: string;
+  sentenceParts: string[]; // "The", "cat", "sat"
+  correctOrder: string[];
+}
+
 export interface PracticeModule {
   grammarTopic: string;
   mfp: {
     meaning: string;
     form: string;
     pronunciation: string;
-    visualData: { label: string; value: number }[]; // For timeline/charts
+    timeline?: TimelineEvent[]; // NEW: For tenses/evolution
   };
-  teachingChunks: {
+  // Micro-chunks replaced generic teaching chunks
+  microLessons: {
+    type: 'CONCEPT' | 'TIMELINE' | 'DRAG_DROP' | 'SENTENCE_BUILDER' | 'QUIZ' | 'SPEAKING';
     title: string;
-    content: string;
-    icon: 'idea' | 'structure' | 'sound' | 'alert';
+    content?: string; // For Concept
+    data?: any; // Dynamic data based on type
+    xpReward: number;
   }[];
-  examples: string[];
-  quizzes: { question: string; options: string[]; correct: number }[];
-  tests: { question: string; options: string[]; correct: number }[];
-  gapFills: { sentence: string; answer: string }[];
-  wordFormation: { 
-    root: string; 
-    derivatives: string[]; 
-    sentence: string; 
-    answer: string;
-  }[];
-  paraphrasing: {
-    original: string;
-    paraphrase: string;
-    technique: string;
-    options: string[];
-    correct: number;
-  }[];
-  kahootLinks: { title: string; url: string }[];
-  speakingQuestions: string[];
 }
